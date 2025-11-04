@@ -1,0 +1,20 @@
+{
+	"name": "pitupi-chat",
+	"version": "1.0.0",
+	"description": "A minimal p2p chat cli application",
+	"keywords": [
+		"p2p",
+		"p2p-chat"
+	],
+	"repository": {
+		"type": "git",
+		"url": "../.git"
+	},
+	"license": "MIT",
+	"author": "Enoch Fagbenja",
+	"type": "module",
+	"main": "index.js",
+	"scripts": {
+		"test": "echo \"Error: no test specified\" && exit 1"
+	}
+}
