@@ -5,11 +5,15 @@ import (
 	"encoding/json"
 	"fmt"
 	"log"
+	"math/rand/v2"
 	"net"
 	"net/http"
+	"strconv"
 	"syscall"
 	"time"
 )
+
+var randId string = strconv.Itoa(rand.IntN(1000))
 
 func main() {
 	go broadcastPeer()
@@ -41,7 +45,7 @@ func broadcastPeer() {
 	defer conn.Close()
 
 	for range 10 {
-		_, err = conn.Write([]byte("Hello"))
+		_, err = fmt.Fprintf(conn, "Hello from %s", randId)
 		if err != nil {
 			panic(err)
 		}
