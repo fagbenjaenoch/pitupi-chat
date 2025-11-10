@@ -13,6 +13,8 @@ import (
 	"time"
 )
 
+const BROADCAST_DELAY = 5 // seconds
+
 var randId string = strconv.Itoa(rand.IntN(1000))
 
 func main() {
@@ -44,12 +46,12 @@ func broadcastPeer() {
 	}
 	defer conn.Close()
 
-	for range 10 {
-		_, err = fmt.Fprintf(conn, "Hello from %s", randId)
+	for {
+		_, err = fmt.Fprintf(conn, "hello from %s", randId)
 		if err != nil {
 			panic(err)
 		}
-		time.Sleep(time.Second * 1)
+		time.Sleep(time.Second * BROADCAST_DELAY)
 	}
 }
 
