@@ -2,12 +2,10 @@ package main
 
 import (
 	"context"
-	"encoding/json"
 	"fmt"
 	"log"
 	"math/rand/v2"
 	"net"
-	"net/http"
 	"strconv"
 	"syscall"
 	"time"
@@ -18,22 +16,25 @@ const BROADCAST_DELAY = 5 // seconds
 var randId string = strconv.Itoa(rand.IntN(1000))
 
 func main() {
+	peerAddress := fmt.Sprintf("%s:%d", getMyIpV4Address(), port)
+
 	go broadcastPeer()
 	go listenToPeerBroadcasts()
+	go listenForMessages(peerAddress)
 
-	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
-		w.Header().Set("Content-Type", "application/json")
-		json.NewEncoder(w).Encode(struct {
-			Status  string `json:"status"`
-			Message string `json:"message"`
-		}{
-			Status:  "ok",
-			Message: "hello from go server",
-		})
-	})
-
-	log.Println("server starting...")
-	log.Fatal(http.ListenAndServe(":0", nil))
+	// http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
+	// 	w.Header().Set("Content-Type", "application/json")
+	// 	json.NewEncoder(w).Encode(struct {
+	// 		Status  string `json:"status"`
+	// 		Message string `json:"message"`
+	// 	}{
+	// 		Status:  "ok",
+	// 		Message: "hello from go server",
+	// 	})
+	// })
+	//
+	// log.Println("server starting...")
+	// log.Fatal(http.ListenAndServe(":0", nil))
 }
 
 func broadcastPeer() {
@@ -82,4 +83,21 @@ func listenToPeerBroadcasts() {
 		n, src, _ := conn.ReadFrom(buf)
 		fmt.Printf("from %v: %s \n", src, string(buf[:n]))
 	}
+}
+
+func getMyIpV4Address() string {
+	addrs, err := net.InterfaceAddrs()
+	if err != nil {
+		return ""
+	}
+
+	for _, address := range addrs {
+		if ipnet, ok := address.(*net.IPNet); ok && !ipnet.IP.IsLoopback() {
+			if ipnet.IP.To4() != nil {
+				return ipnet.IP.String()
+			}
+		}
+	}
+
+	return ""
 }
