@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"flag"
 	"fmt"
 	"log"
 	"math/rand/v2"
@@ -14,13 +15,18 @@ import (
 const BROADCAST_DELAY = 5 // seconds
 
 var randId string = strconv.Itoa(rand.IntN(1000))
+var port int
 
 func main() {
+	flag.IntVar(&port, "port", 9000, "Port to run the peer on")
+	flag.Parse()
+
 	peerAddress := fmt.Sprintf("%s:%d", getMyIpV4Address(), port)
+	fmt.Printf("Here's your ip address: %s", peerAddress)
 
 	go broadcastPeer()
 	go listenToPeerBroadcasts()
-	go listenForMessages(peerAddress)
+	listenForMessages(peerAddress)
 
 	// http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
 	// 	w.Header().Set("Content-Type", "application/json")
@@ -83,6 +89,35 @@ func listenToPeerBroadcasts() {
 		n, src, _ := conn.ReadFrom(buf)
 		fmt.Printf("from %v: %s \n", src, string(buf[:n]))
 	}
+}
+
+func listenForMessages(address string) {
+	conn, err := net.Listen("tcp", address)
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer conn.Close()
+
+	for {
+		conn, err := conn.Accept()
+		if err != nil {
+			log.Fatal(err)
+		}
+		handleNewConnection(conn)
+	}
+}
+
+func handleNewConnection(conn net.Conn) {
+	defer conn.Close()
+
+	conn.Write([]byte("Hello from the server"))
+
+	buf := make([]byte, 1024)
+	n, err := conn.Read(buf)
+	if err != nil {
+		log.Fatal(err)
+	}
+	fmt.Printf("Message from peer: %s", buf[:n])
 }
 
 func getMyIpV4Address() string {
