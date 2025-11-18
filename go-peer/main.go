@@ -175,11 +175,22 @@ func getMyIpV4Address() string {
 	for _, address := range addrs {
 		if ipnet, ok := address.(*net.IPNet); ok && !ipnet.IP.IsLoopback() {
 			if ipnet.IP.To4() != nil {
-				return ipnet.IP.String()
+				fmt.Println(ipnet.IP.String())
 			}
 		}
 	}
 
+	// conn, err := net.DialTimeout("tcp", "0.0.0.0:0", time.Second*1)
+	// if err != nil {
+	// 	if opErr, ok := err.(*net.OpError); ok && opErr.Addr != nil {
+	// 		return opErr.Addr.String()
+	// 	}
+	// 	log.Fatal(err)
+	// }
+	// defer conn.Close()
+	//
+	// localAddr := conn.LocalAddr().(*net.TCPAddr).IP.String()
+	// return localAddr
 	return ""
 }
 
