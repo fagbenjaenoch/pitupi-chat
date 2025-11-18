@@ -17,12 +17,21 @@ const BROADCAST_DELAY = 5 // seconds
 var randId string = strconv.Itoa(rand.IntN(1000))
 var port int
 
+type Peer struct {
+	Id      string
+	Address string
+}
+
+var peersDiscovered map[string]Peer
+
 func main() {
 	flag.IntVar(&port, "port", 9000, "Port to run the peer on")
 	flag.Parse()
 
 	peerAddress := fmt.Sprintf("%s:%d", getMyIpV4Address(), port)
-	fmt.Printf("Here's your ip address: %s", peerAddress)
+	fmt.Printf("Here's your ip address: %s\n", peerAddress)
+
+	peersDiscovered = make(map[string]Peer)
 
 	go broadcastPeer()
 	go listenToPeerBroadcasts()
@@ -87,7 +96,12 @@ func listenToPeerBroadcasts() {
 	buf := make([]byte, 1024)
 	for {
 		n, src, _ := conn.ReadFrom(buf)
-		fmt.Printf("from %v: %s \n", src, string(buf[:n]))
+		peerId := string(buf[:n])
+
+		peersDiscovered[peerId] = Peer{
+			Id:      peerId,
+			Address: src.String(),
+		}
 	}
 }
 
