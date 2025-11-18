@@ -211,5 +211,16 @@ func broadcastMessage(message, id string) {
 }
 
 func execCommand(command string) {
-	fmt.Println(command)
+	switch command {
+	case "ls":
+		green := "\x1b[32m"
+		reset := "\x1b[0m"
+		fmt.Println(green + "Available Peers" + reset)
+
+		for _, peer := range peersDiscovered {
+			fmt.Println("\t", peer.Id)
+		}
+	default:
+		fmt.Println("enter a valid command")
+	}
 }
