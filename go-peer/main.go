@@ -53,10 +53,10 @@ func main() {
 		m := strings.SplitN(line, " ", 1)
 
 		switch m[0][:1] { // first letter of the message
-		case "@":
-			sendTo := strings.TrimPrefix(m[0], "@")
+		case "@": // mentions
+			sendTo := m[0][1:]
 			broadcastMessage(strings.Join(m[1:], ""), sendTo)
-		case "!":
+		case "!": // user commands
 			fmt.Println("you just typed a command")
 			execCommand(m[0][1:])
 		default:
