@@ -10,8 +10,10 @@ import (
 	"net"
 	"os"
 	"strconv"
+	"strings"
 	"syscall"
 	"time"
+	"unicode/utf8"
 )
 
 const BROADCAST_DELAY = 5 // seconds
@@ -30,8 +32,10 @@ func main() {
 	flag.IntVar(&port, "port", 9000, "Port to run the peer on")
 	flag.Parse()
 
-	peerAddress := fmt.Sprintf("%s:%d", getMyIpV4Address(), port)
-	fmt.Printf("Here's your ip address: %s\n", peerAddress)
+	myAddr := fmt.Sprintf("%s:%d", getMyIpV4Address(), port)
+
+	fmt.Printf("Here's your ip address: %s\n", myAddr)
+	fmt.Printf("Here's your id: %s\n", randId)
 
 	peersDiscovered = make(map[string]Peer)
 
