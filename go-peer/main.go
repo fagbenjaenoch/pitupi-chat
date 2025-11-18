@@ -41,11 +41,27 @@ func main() {
 
 	go broadcastPeer()
 	go listenToPeerBroadcasts()
-	go listenForMessages(peerAddress)
+	go listenForMessages(myAddr)
 
 	scanner := bufio.NewScanner(os.Stdin)
 	for scanner.Scan() {
 		line := scanner.Text()
+		if utf8.RuneCountInString(line) == 0 {
+			continue
+		}
+
+		m := strings.SplitN(line, " ", 1)
+
+		switch m[0][:1] { // first letter of the message
+		case "@":
+			sendTo := strings.TrimPrefix(m[0], "@")
+			broadcastMessage(strings.Join(m[1:], ""), sendTo)
+		case "!":
+			fmt.Println("you just typed a command")
+			execCommand(m[0][1:])
+		default:
+			fmt.Println("info: message will be broadcasted to all peers")
+		}
 
 		fmt.Println("you:", line)
 
@@ -165,4 +181,24 @@ func getMyIpV4Address() string {
 	}
 
 	return ""
+}
+
+func broadcastMessage(message, id string) {
+	recipient, ok := peersDiscovered[id]
+	if !ok {
+		fmt.Println("could not find peer")
+		return
+	}
+	conn, err := net.Dial("tcp", recipient.Address)
+	if err != nil {
+		fmt.Println(recipient.Address)
+		fmt.Println("error occurred while sending message")
+		return
+	}
+
+	conn.Write([]byte(message))
+}
+
+func execCommand(command string) {
+	fmt.Println(command)
 }
