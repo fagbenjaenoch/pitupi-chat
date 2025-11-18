@@ -1,12 +1,14 @@
 package main
 
 import (
+	"bufio"
 	"context"
 	"flag"
 	"fmt"
 	"log"
 	"math/rand/v2"
 	"net"
+	"os"
 	"strconv"
 	"syscall"
 	"time"
@@ -35,8 +37,18 @@ func main() {
 
 	go broadcastPeer()
 	go listenToPeerBroadcasts()
-	listenForMessages(peerAddress)
+	go listenForMessages(peerAddress)
 
+	scanner := bufio.NewScanner(os.Stdin)
+	for scanner.Scan() {
+		line := scanner.Text()
+
+		fmt.Println("you:", line)
+
+		if err := scanner.Err(); err != nil {
+			fmt.Fprintln(os.Stdout, "could not read standard input", err)
+		}
+	}
 	// http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
 	// 	w.Header().Set("Content-Type", "application/json")
 	// 	json.NewEncoder(w).Encode(struct {
@@ -63,7 +75,7 @@ func broadcastPeer() {
 	defer conn.Close()
 
 	for {
-		_, err = fmt.Fprintf(conn, "hello from %s", randId)
+		_, err = fmt.Fprintf(conn, "%s", randId)
 		if err != nil {
 			panic(err)
 		}
