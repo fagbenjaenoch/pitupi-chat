@@ -81,16 +81,16 @@ func (c *CommandHandler) Handle(input string) (Message, bool) {
 		hasParam = true
 	}
 
-	if len(parts) == 2 && !hasParam {
-		param = parts[1]
+	if len(parts) == 2 && !hasParam { // if we have a message e.g !hi <message> . Where param is nil
+		message = parts[1]
 	}
 
-	if len(parts) > 2 {
+	if len(parts) > 2 && hasParam { // if we have a param and a message following after it e.g !poke @user haha
 		message = parts[2]
 	}
 
-	if !hasParam {
-		message = strings.TrimSpace(parts[1])
+	if len(parts) > 2 && !hasParam { // when we have more than two parts and there's no parameter e.g !angry guys i dont like that
+		message = strings.Join(parts[1:], " ")
 	}
 
 	fmt.Printf("command:%q, param: %q, message:%q\n", command, param, message)
