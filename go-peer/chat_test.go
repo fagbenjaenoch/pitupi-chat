@@ -21,6 +21,14 @@ func TestCommandHandler(t *testing.T) {
 			"!whisper @123 hi",
 			"whisper 123 hi",
 		},
+		{
+			"!announce hey guys",
+			"announce hey guys",
+		},
+		{
+			"!ls",
+			"ls",
+		},
 	}
 
 	for _, tc := range tests {
