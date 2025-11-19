@@ -1,0 +1,34 @@
+package main
+
+import "testing"
+
+func TestCommandHandler(t *testing.T) {
+	commandHandler := CommandHandler{}
+
+	tests := []struct {
+		input string
+		want  string
+	}{
+		{
+			"!ban @user123",
+			"ban user123",
+		},
+		{
+			"!poke @123",
+			"poke 123",
+		},
+		{
+			"!whisper @123 hi",
+			"whisper 123 hi",
+		},
+	}
+
+	for _, tc := range tests {
+		t.Run(tc.input, func(t *testing.T) {
+			result, _ := commandHandler.Handle(tc.input)
+			if result.Value() != tc.want {
+				t.Errorf("got %q, want %q", result.Value(), tc.want)
+			}
+		})
+	}
+}
