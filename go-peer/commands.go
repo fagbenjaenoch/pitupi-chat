@@ -48,23 +48,40 @@ func (c *CommandHandler) Handle(input string) (Message, bool) {
 	}
 
 	trim := strings.TrimPrefix(input, "!")
-	parts := strings.SplitN(trim, " ", 2)
+	parts := strings.SplitN(trim, " ", 3)
 
 	command := parts[0]
+
+	if len(parts) < 2 {
+		return CommandMessage{
+			command: command,
+			param:   "",
+			message: "",
+		}, true
+	}
 
 	var param string
 	hasParam := false
 	var message string
 
-	if strings.HasPrefix(parts[1], "@") && len(parts) > 2 {
-		param = strings.TrimPrefix(parts[1], "@")
+	if after, ok := strings.CutPrefix(parts[1], "@"); ok {
+		param = strings.TrimSpace(after)
 		hasParam = true
+	}
+
+	if len(parts) == 2 && !hasParam {
+		param = parts[1]
+	}
+
+	if len(parts) > 2 {
 		message = parts[2]
 	}
 
 	if !hasParam {
-		message = parts[1]
+		message = strings.TrimSpace(parts[1])
 	}
+
+	fmt.Printf("command:%q, param: %q, message:%q\n", command, param, message)
 
 	return CommandMessage{
 		command: command,
