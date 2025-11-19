@@ -1,5 +1,7 @@
 package main
 
+import "strings"
+
 type Message interface {
 	Kind() string
 }
@@ -24,3 +26,40 @@ type PlainMessage struct {
 }
 
 func (p PlainMessage) Kind() string { return "plain" }
+
+type Handler interface {
+	Handle(input string) (Message, bool)
+}
+
+type CommandHandler struct{}
+
+func (c *CommandHandler) Handle(input string) (Message, bool) {
+	if !strings.HasPrefix(input, "!") {
+		return nil, false
+	}
+
+	trim := strings.TrimPrefix(input, "!")
+	parts := strings.SplitN(trim, " ", 2)
+
+	command := parts[0]
+
+	var param string
+	hasParam := false
+	var message string
+
+	if strings.HasPrefix(parts[1], "@") && len(parts) > 2 {
+		param = strings.TrimPrefix(parts[1], "@")
+		hasParam = true
+		message = parts[2]
+	}
+
+	if !hasParam {
+		message = parts[1]
+	}
+
+	return CommandMessage{
+		command: command,
+		param:   param,
+		message: message,
+	}, true
+}
