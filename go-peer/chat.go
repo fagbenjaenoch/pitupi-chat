@@ -18,7 +18,19 @@ type CommandMessage struct {
 
 func (c CommandMessage) Kind() string { return "command" }
 func (c CommandMessage) Value() string {
-	return strings.TrimSpace(fmt.Sprintf("%s %s %s", c.command, c.param, c.message))
+	var result string
+
+	result = result + c.command
+
+	if len(c.param) > 0 {
+		result = result + " " + c.param
+	}
+
+	if len(c.message) > 0 {
+		result = result + " " + c.message
+	}
+
+	return result
 }
 
 type MentionMessage struct {
