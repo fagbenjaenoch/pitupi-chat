@@ -1,9 +1,13 @@
 package main
 
-import "strings"
+import (
+	"fmt"
+	"strings"
+)
 
 type Message interface {
 	Kind() string
+	Value() string
 }
 
 type CommandMessage struct {
@@ -13,19 +17,24 @@ type CommandMessage struct {
 }
 
 func (c CommandMessage) Kind() string { return "command" }
+func (c CommandMessage) Value() string {
+	return strings.TrimSpace(fmt.Sprintf("%s %s %s", c.command, c.param, c.message))
+}
 
 type MentionMessage struct {
 	user string
 	text string
 }
 
-func (m MentionMessage) Kind() string { return "mention" }
+func (m MentionMessage) Kind() string  { return "mention" }
+func (m MentionMessage) Value() string { return fmt.Sprintf("%s %s", m.user, m.text) }
 
 type PlainMessage struct {
 	Text string
 }
 
-func (p PlainMessage) Kind() string { return "plain" }
+func (p PlainMessage) Kind() string  { return "plain" }
+func (p PlainMessage) Value() string { return p.Text }
 
 type Handler interface {
 	Handle(input string) (Message, bool)
