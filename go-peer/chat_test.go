@@ -69,3 +69,36 @@ func TestMentionHandler(t *testing.T) {
 		})
 	}
 }
+
+func TestParser(t *testing.T) {
+	parser := NewParser()
+
+	tests := []struct {
+		input string
+		want  Message
+	}{
+		{
+			"@user hi", MentionMessage{
+				user: "user",
+				text: "hi",
+			},
+		},
+		{
+			"!poke @user hi", CommandMessage{
+				command: "poke",
+				param:   "user",
+				message: "hi",
+			},
+		},
+	}
+
+	for _, tc := range tests {
+		result := parser.Parse(tc.input)
+
+		t.Run(tc.want.Kind(), func(t *testing.T) {
+			if result != tc.want {
+				t.Errorf("want %#v, got %#v", tc.want, result)
+			}
+		})
+	}
+}
