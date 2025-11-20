@@ -38,8 +38,20 @@ type MentionMessage struct {
 	text string
 }
 
-func (m MentionMessage) Kind() string  { return "mention" }
-func (m MentionMessage) Value() string { return fmt.Sprintf("%s %s", m.user, m.text) }
+func (m MentionMessage) Kind() string { return "mention" }
+func (m MentionMessage) Value() string {
+	var result string
+
+	if len(m.user) > 0 {
+		result = result + m.user
+	}
+
+	if len(m.text) > 0 {
+		result = result + " " + m.text
+	}
+
+	return result
+}
 
 type PlainMessage struct {
 	Text string
