@@ -128,7 +128,7 @@ func (c CommandHandler) Handle(input string) (Message, bool) {
 		message = strings.Join(parts[1:], " ")
 	}
 
-	fmt.Printf("command:%q, param: %q, message:%q\n", command, param, message)
+	// fmt.Printf("command:%q, param: %q, message:%q\n", command, param, message)
 
 	return CommandMessage{
 		command: command,
@@ -157,7 +157,7 @@ func (m MentionHandler) Handle(input string) (Message, bool) {
 		text = parts[1]
 	}
 
-	fmt.Printf("mention handler: user:%q, text:%q\n", user, text)
+	// fmt.Printf("mention handler: user:%q, text:%q\n", user, text)
 	return MentionMessage{
 		user: user,
 		text: text,
