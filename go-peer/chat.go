@@ -1,9 +1,32 @@
 package main
 
 import (
-	"fmt"
 	"strings"
 )
+
+type Parser struct {
+	chain []Handler
+}
+
+func NewParser() *Parser {
+	return &Parser{
+		chain: []Handler{
+			CommandHandler{},
+			MentionHandler{},
+			PlainHandler{},
+		},
+	}
+}
+
+func (p *Parser) Parse(input string) Message {
+	for _, h := range p.chain {
+		if msg, ok := h.Handle(input); ok {
+			return msg
+		}
+	}
+
+	return PlainMessage{Text: input}
+}
 
 type Message interface {
 	Kind() string
