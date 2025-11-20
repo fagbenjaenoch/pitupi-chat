@@ -113,3 +113,30 @@ func (c *CommandHandler) Handle(input string) (Message, bool) {
 		message: message,
 	}, true
 }
+
+type MentionHandler struct{}
+
+func (m *MentionHandler) Handle(input string) (Message, bool) {
+	if !strings.HasPrefix(input, "@") {
+		return MentionMessage{
+			user: "",
+			text: "",
+		}, false
+	}
+
+	trim := strings.TrimPrefix(input, "@")
+	parts := strings.SplitN(trim, " ", 2)
+
+	user := parts[0]
+
+	var text string
+	if len(parts) > 1 {
+		text = parts[1]
+	}
+
+	fmt.Printf("mention handler: user:%q, text:%q\n", user, text)
+	return MentionMessage{
+		user: user,
+		text: text,
+	}, true
+}
