@@ -50,17 +50,16 @@ func main() {
 			continue
 		}
 
-		m := strings.SplitN(line, " ", 1)
+		parser := Parser{}
+		msg := parser.Parse(line)
 
-		switch m[0][:1] { // first letter of the message
-		case "@": // mentions
-			sendTo := m[0][1:]
-			broadcastMessage(strings.Join(m[1:], ""), sendTo)
-		case "!": // user commands
-			fmt.Println("you just typed a command")
-			execCommand(m[0][1:])
+		switch msg.Kind() {
+		case "command":
+			execCommand(msg.Value())
+		case "mention":
+			execMention(msg.Value())
 		default:
-			fmt.Println("info: message will be broadcasted to all peers")
+			// broadcastMessage(msg.Value())
 		}
 
 		fmt.Println("you:", line)
@@ -210,6 +209,5 @@ func broadcastMessage(message, id string) {
 	conn.Write([]byte(message))
 }
 
-func execCommand(command string) {
-
-}
+func execCommand(command string) {}
+func execMention(command string) {}
