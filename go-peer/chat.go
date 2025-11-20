@@ -163,3 +163,11 @@ func (m MentionHandler) Handle(input string) (Message, bool) {
 		text: text,
 	}, true
 }
+
+type PlainHandler struct{}
+
+func (p PlainHandler) Handle(input string) (Message, bool) {
+	return PlainMessage{
+		Text: input,
+	}, true
+}
