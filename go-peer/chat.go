@@ -89,7 +89,7 @@ type Handler interface {
 
 type CommandHandler struct{}
 
-func (c *CommandHandler) Handle(input string) (Message, bool) {
+func (c CommandHandler) Handle(input string) (Message, bool) {
 	if !strings.HasPrefix(input, "!") {
 		return nil, false
 	}
@@ -139,7 +139,7 @@ func (c *CommandHandler) Handle(input string) (Message, bool) {
 
 type MentionHandler struct{}
 
-func (m *MentionHandler) Handle(input string) (Message, bool) {
+func (m MentionHandler) Handle(input string) (Message, bool) {
 	if !strings.HasPrefix(input, "@") {
 		return MentionMessage{
 			user: "",
