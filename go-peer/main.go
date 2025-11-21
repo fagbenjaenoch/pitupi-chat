@@ -219,6 +219,10 @@ func listAllPeers() {
 
 	fmt.Println(green + "All Peers" + reset)
 	for _, peer := range peersDiscovered {
+		if randId == peer.Id {
+			fmt.Printf("%s (you)\n", peer.Id)
+			continue
+		}
 		fmt.Println(peer.Id)
 	}
 }
