@@ -13,6 +13,8 @@ import (
 	"syscall"
 	"time"
 	"unicode/utf8"
+
+	"github.com/fagbenjaenoch/pitupi-chat/chat"
 )
 
 const BROADCAST_DELAY = 5 // seconds
@@ -49,7 +51,7 @@ func main() {
 			continue
 		}
 
-		parser := Parser{}
+		parser := chat.NewParser()
 		msg := parser.Parse(line)
 
 		switch msg.Kind() {
