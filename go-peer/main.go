@@ -60,7 +60,7 @@ func main() {
 		case "mention":
 			execMention(msg.Value())
 		default:
-			// broadcastMessage(msg.Value())
+			broadcastMessage(msg.Value())
 		}
 
 		fmt.Println("you:", line)
@@ -194,15 +194,9 @@ func getMyIpV4Address() string {
 	return ""
 }
 
-func broadcastMessage(message, id string) {
-	recipient, ok := peersDiscovered[id]
-	if !ok {
-		fmt.Println("could not find peer")
-		return
-	}
-	conn, err := net.Dial("tcp", recipient.Address)
+func broadcastMessage(message string) {
+	conn, err := net.Dial("tcp", string(net.IPv4bcast))
 	if err != nil {
-		fmt.Println(recipient.Address)
 		fmt.Println("error occurred while sending message")
 		return
 	}
@@ -210,5 +204,21 @@ func broadcastMessage(message, id string) {
 	conn.Write([]byte(message))
 }
 
-func execCommand(command string) {}
-func execMention(command string) {}
+func execCommand(c string) {
+	switch c {
+	case "ls":
+		listAllPeers()
+	}
+}
+
+func execMention(m string) {}
+
+func listAllPeers() {
+	green := "\x1b[32m"
+	reset := "\x1b[0m"
+
+	fmt.Println(green + "All Peers" + reset)
+	for _, peer := range peersDiscovered {
+		fmt.Println(peer.Id)
+	}
+}
