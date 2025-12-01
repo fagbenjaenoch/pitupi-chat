@@ -56,7 +56,7 @@ func main() {
 
 		switch msg.Kind() {
 		case "command":
-			execCommand(msg.Value())
+			execCommand(msg.GetParts())
 		case "mention":
 			execMention(msg.Value())
 		default:
@@ -204,8 +204,8 @@ func broadcastMessage(message string) {
 	conn.Write([]byte(message))
 }
 
-func execCommand(c string) {
-	switch c {
+func execCommand(parts []string) {
+	switch parts[0] {
 	case "ls":
 		listAllPeers()
 	}
