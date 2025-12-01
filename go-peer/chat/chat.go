@@ -31,6 +31,7 @@ func (p *Parser) Parse(input string) Message {
 type Message interface {
 	Kind() string
 	Value() string
+	GetParts() []string
 }
 
 type CommandMessage struct {
@@ -56,6 +57,10 @@ func (c CommandMessage) Value() string {
 	return result
 }
 
+func (c CommandMessage) GetParts() []string {
+	return []string{c.command, c.param, c.message}
+}
+
 type MentionMessage struct {
 	user string
 	text string
@@ -75,13 +80,17 @@ func (m MentionMessage) Value() string {
 
 	return result
 }
+func (m MentionMessage) GetParts() []string {
+	return []string{m.user, m.text}
+}
 
 type PlainMessage struct {
 	Text string
 }
 
-func (p PlainMessage) Kind() string  { return "plain" }
-func (p PlainMessage) Value() string { return p.Text }
+func (p PlainMessage) Kind() string       { return "plain" }
+func (p PlainMessage) Value() string      { return p.Text }
+func (p PlainMessage) GetParts() []string { return []string{p.Text} }
 
 type Handler interface {
 	Handle(input string) (Message, bool)
