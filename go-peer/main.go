@@ -104,7 +104,7 @@ func broadcastPeer() {
 	}
 }
 
-func listenToUDPBroadcasts(port int) {
+func createReusablePort() net.ListenConfig {
 	var lc net.ListenConfig
 	lc.Control = func(network, address string, c syscall.RawConn) error {
 		var err error
@@ -119,6 +119,12 @@ func listenToUDPBroadcasts(port int) {
 
 		return err
 	}
+
+	return lc
+}
+
+func listenToPeerBroadcasts(port int) {
+	lc := createReusablePort()
 
 	conn, err := lc.ListenPacket(context.Background(), "udp", ":"+strconv.Itoa(port))
 	if err != nil {
