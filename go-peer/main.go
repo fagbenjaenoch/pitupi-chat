@@ -194,7 +194,10 @@ func getMyIpV4Address() string {
 }
 
 func broadcastMessage(message string) {
-	conn, err := net.Dial("tcp", string(net.IPv4bcast)+":9998")
+	conn, err := net.DialUDP("udp", nil, &net.UDPAddr{
+		IP:   net.IPv4bcast,
+		Port: msgBroadcastPort,
+	})
 	if err != nil {
 		fmt.Println("error occurred while sending message")
 		return
