@@ -169,7 +169,7 @@ func handleNewConnection(conn net.Conn) {
 func getMyIpV4Address() string {
 	addrs, err := net.InterfaceAddrs()
 	if err != nil {
-		return ""
+		log.Fatal("could not get peer's ip address")
 	}
 
 	for _, address := range addrs {
