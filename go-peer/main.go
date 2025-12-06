@@ -28,7 +28,8 @@ type Peer struct {
 }
 
 var peersDiscovered map[string]Peer
-var broadcastPort int = 9999
+var peerBroadcastPort int = 9999
+var msgBroadcastPort int = 9998
 
 func main() {
 	flag.IntVar(&port, "port", 9000, "Port to run the peer on")
@@ -88,7 +89,7 @@ func main() {
 func broadcastPeer() {
 	conn, err := net.DialUDP("udp", nil, &net.UDPAddr{
 		IP:   net.IPv4bcast,
-		Port: 9999,
+		Port: peerBroadcastPort,
 	})
 	if err != nil {
 		panic(err)
