@@ -28,6 +28,7 @@ type Peer struct {
 }
 
 var peersDiscovered map[string]Peer
+var broadcastPort int = 9999
 
 func main() {
 	flag.IntVar(&port, "port", 9000, "Port to run the peer on")
@@ -41,7 +42,7 @@ func main() {
 	peersDiscovered = make(map[string]Peer)
 
 	go broadcastPeer()
-	go listenToUDPBroadcasts(port)
+	go listenToPeerBroadcasts(broadcastPort)
 	go listenForMessages(myAddr)
 
 	scanner := bufio.NewScanner(os.Stdin)
