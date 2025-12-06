@@ -43,8 +43,9 @@ func main() {
 	peersDiscovered = make(map[string]Peer)
 
 	go broadcastPeer()
-	go listenToPeerBroadcasts(broadcastPort)
+	go listenToPeerBroadcasts(peerBroadcastPort)
 	go listenForMessages(myAddr)
+	go listenToGeneralBroadcasts(msgBroadcastPort)
 
 	scanner := bufio.NewScanner(os.Stdin)
 	for scanner.Scan() {
@@ -216,7 +217,7 @@ func listenToGeneralBroadcasts(port int) {
 		n, _, _ := conn.ReadFrom(buf)
 		msg := buf[:n]
 
-		fmt.Printf("#general: %s", msg)
+		fmt.Printf("#general: %s\n", msg)
 	}
 }
 
