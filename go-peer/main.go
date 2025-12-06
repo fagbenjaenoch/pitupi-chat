@@ -41,7 +41,7 @@ func main() {
 	peersDiscovered = make(map[string]Peer)
 
 	go broadcastPeer()
-	go listenToPeerBroadcasts()
+	go listenToUDPBroadcasts(port)
 	go listenForMessages(myAddr)
 
 	scanner := bufio.NewScanner(os.Stdin)
@@ -103,7 +103,7 @@ func broadcastPeer() {
 	}
 }
 
-func listenToPeerBroadcasts() {
+func listenToUDPBroadcasts(port int) {
 	var lc net.ListenConfig
 	lc.Control = func(network, address string, c syscall.RawConn) error {
 		var err error
@@ -119,7 +119,7 @@ func listenToPeerBroadcasts() {
 		return err
 	}
 
-	conn, err := lc.ListenPacket(context.Background(), "udp", ":9999")
+	conn, err := lc.ListenPacket(context.Background(), "udp", ":"+strconv.Itoa(port))
 	if err != nil {
 		panic(err)
 	}
@@ -185,7 +185,7 @@ func getMyIpV4Address() string {
 }
 
 func broadcastMessage(message string) {
-	conn, err := net.Dial("tcp", string(net.IPv4bcast))
+	conn, err := net.Dial("tcp", string(net.IPv4bcast)+":9998")
 	if err != nil {
 		fmt.Println("error occurred while sending message")
 		return
