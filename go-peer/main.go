@@ -10,10 +10,11 @@ import (
 	"net"
 	"os"
 	"strconv"
-	"strings"
 	"syscall"
 	"time"
 	"unicode/utf8"
+
+	"github.com/fagbenjaenoch/pitupi-chat/chat"
 )
 
 const BROADCAST_DELAY = 5 // seconds
@@ -27,6 +28,8 @@ type Peer struct {
 }
 
 var peersDiscovered map[string]Peer
+var peerBroadcastPort int = 9999
+var msgBroadcastPort int = 9998
 
 func main() {
 	flag.IntVar(&port, "port", 9000, "Port to run the peer on")
@@ -40,8 +43,9 @@ func main() {
 	peersDiscovered = make(map[string]Peer)
 
 	go broadcastPeer()
-	go listenToPeerBroadcasts()
+	go listenToPeerBroadcasts(peerBroadcastPort)
 	go listenForMessages(myAddr)
+	go listenToGeneralBroadcasts(msgBroadcastPort)
 
 	scanner := bufio.NewScanner(os.Stdin)
 	for scanner.Scan() {
@@ -50,17 +54,16 @@ func main() {
 			continue
 		}
 
-		m := strings.SplitN(line, " ", 1)
+		parser := chat.NewParser()
+		msg := parser.Parse(line)
 
-		switch m[0][:1] { // first letter of the message
-		case "@": // mentions
-			sendTo := m[0][1:]
-			broadcastMessage(strings.Join(m[1:], ""), sendTo)
-		case "!": // user commands
-			fmt.Println("you just typed a command")
-			execCommand(m[0][1:])
+		switch msg.Kind() {
+		case "command":
+			execCommand(msg.GetParts())
+		case "mention":
+			execMention(msg.Value())
 		default:
-			fmt.Println("info: message will be broadcasted to all peers")
+			broadcastMessage(msg.Value())
 		}
 
 		fmt.Println("you:", line)
@@ -87,7 +90,7 @@ func main() {
 func broadcastPeer() {
 	conn, err := net.DialUDP("udp", nil, &net.UDPAddr{
 		IP:   net.IPv4bcast,
-		Port: 9999,
+		Port: peerBroadcastPort,
 	})
 	if err != nil {
 		panic(err)
@@ -103,7 +106,7 @@ func broadcastPeer() {
 	}
 }
 
-func listenToPeerBroadcasts() {
+func createReusablePort() net.ListenConfig {
 	var lc net.ListenConfig
 	lc.Control = func(network, address string, c syscall.RawConn) error {
 		var err error
@@ -119,7 +122,13 @@ func listenToPeerBroadcasts() {
 		return err
 	}
 
-	conn, err := lc.ListenPacket(context.Background(), "udp", ":9999")
+	return lc
+}
+
+func listenToPeerBroadcasts(port int) {
+	lc := createReusablePort()
+
+	conn, err := lc.ListenPacket(context.Background(), "udp", ":"+strconv.Itoa(port))
 	if err != nil {
 		panic(err)
 	}
@@ -169,40 +178,27 @@ func handleNewConnection(conn net.Conn) {
 func getMyIpV4Address() string {
 	addrs, err := net.InterfaceAddrs()
 	if err != nil {
-		return ""
+		log.Fatal("could not get peer's ip address")
 	}
 
+	var found []string
 	for _, address := range addrs {
 		if ipnet, ok := address.(*net.IPNet); ok && !ipnet.IP.IsLoopback() {
 			if ipnet.IP.To4() != nil {
-				fmt.Println(ipnet.IP.String())
+				found = append(found, ipnet.IP.String())
 			}
 		}
 	}
 
-	// conn, err := net.DialTimeout("tcp", "0.0.0.0:0", time.Second*1)
-	// if err != nil {
-	// 	if opErr, ok := err.(*net.OpError); ok && opErr.Addr != nil {
-	// 		return opErr.Addr.String()
-	// 	}
-	// 	log.Fatal(err)
-	// }
-	// defer conn.Close()
-	//
-	// localAddr := conn.LocalAddr().(*net.TCPAddr).IP.String()
-	// return localAddr
-	return ""
+	return found[1] // for some reason, the second ip from the addresses found is the real ip
 }
 
-func broadcastMessage(message, id string) {
-	recipient, ok := peersDiscovered[id]
-	if !ok {
-		fmt.Println("could not find peer")
-		return
-	}
-	conn, err := net.Dial("tcp", recipient.Address)
+func broadcastMessage(message string) {
+	conn, err := net.DialUDP("udp", nil, &net.UDPAddr{
+		IP:   net.IPv4bcast,
+		Port: msgBroadcastPort,
+	})
 	if err != nil {
-		fmt.Println(recipient.Address)
 		fmt.Println("error occurred while sending message")
 		return
 	}
@@ -210,17 +206,43 @@ func broadcastMessage(message, id string) {
 	conn.Write([]byte(message))
 }
 
-func execCommand(command string) {
-	switch command {
-	case "ls":
-		green := "\x1b[32m"
-		reset := "\x1b[0m"
-		fmt.Println(green + "Available Peers" + reset)
+func listenToGeneralBroadcasts(port int) {
+	lc := createReusablePort()
 
-		for _, peer := range peersDiscovered {
-			fmt.Println("\t", peer.Id)
+	conn, err := lc.ListenPacket(context.Background(), "udp", ":"+strconv.Itoa(port))
+	if err != nil {
+		log.Fatal("could not listen to general broadcasts")
+	}
+	defer conn.Close()
+
+	buf := make([]byte, 1024)
+	for {
+		n, _, _ := conn.ReadFrom(buf)
+		msg := buf[:n]
+
+		fmt.Printf("#general: %s\n", msg)
+	}
+}
+
+func execCommand(parts []string) {
+	switch parts[0] {
+	case "ls":
+		listAllPeers()
+	}
+}
+
+func execMention(m string) {}
+
+func listAllPeers() {
+	green := "\x1b[32m"
+	reset := "\x1b[0m"
+
+	fmt.Println(green + "All Peers" + reset)
+	for _, peer := range peersDiscovered {
+		if randId == peer.Id {
+			fmt.Printf("%s (you)\n", peer.Id)
+			continue
 		}
-	default:
-		fmt.Println("enter a valid command")
+		fmt.Println(peer.Id)
 	}
 }
