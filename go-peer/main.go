@@ -201,6 +201,24 @@ func broadcastMessage(message string) {
 	conn.Write([]byte(message))
 }
 
+func listenToGeneralBroadcasts(port int) {
+	lc := createReusablePort()
+
+	conn, err := lc.ListenPacket(context.Background(), "udp", ":"+strconv.Itoa(port))
+	if err != nil {
+		log.Fatal("could not listen to general broadcasts")
+	}
+	defer conn.Close()
+
+	buf := make([]byte, 1024)
+	for {
+		n, _, _ := conn.ReadFrom(buf)
+		msg := buf[:n]
+
+		fmt.Printf("#general: %s", msg)
+	}
+}
+
 func execCommand(parts []string) {
 	switch parts[0] {
 	case "ls":
