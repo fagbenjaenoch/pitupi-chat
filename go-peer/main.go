@@ -72,19 +72,7 @@ func main() {
 			fmt.Fprintln(os.Stdout, "could not read standard input", err)
 		}
 	}
-	// http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
-	// 	w.Header().Set("Content-Type", "application/json")
-	// 	json.NewEncoder(w).Encode(struct {
-	// 		Status  string `json:"status"`
-	// 		Message string `json:"message"`
-	// 	}{
-	// 		Status:  "ok",
-	// 		Message: "hello from go server",
-	// 	})
-	// })
-	//
-	// log.Println("server starting...")
-	// log.Fatal(http.ListenAndServe(":0", nil))
+
 }
 
 func broadcastPeer() {
@@ -139,10 +127,7 @@ func listenToPeerBroadcasts(port int) {
 		n, src, _ := conn.ReadFrom(buf)
 		peerId := string(buf[:n])
 
-		peersDiscovered[peerId] = Peer{
-			Id:      peerId,
-			Address: src.String(),
-		}
+		peersDiscovered[peerId] = Peer{Id: peerId, Address: src.String()}
 	}
 }
 
