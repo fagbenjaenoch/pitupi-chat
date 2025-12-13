@@ -3,6 +3,7 @@ package main
 import (
 	"bufio"
 	"context"
+	"encoding/json"
 	"flag"
 	"fmt"
 	"log"
@@ -22,6 +23,11 @@ const BROADCAST_DELAY = 5 // seconds
 
 var randId string = strconv.Itoa(rand.IntN(1000))
 var port int
+
+type JsonPayload struct {
+	Id      string `json:"id"`
+	Message string `json:"message"`
+}
 
 type Peer struct {
 	Id      string
@@ -191,7 +197,16 @@ func broadcastMessage(message string) {
 		return
 	}
 
-	conn.Write([]byte(message))
+	jsonPayloadBytes, err := json.Marshal(JsonPayload{
+		Id:      randId,
+		Message: message,
+	})
+	if err != nil {
+		fmt.Println("error occurred while marshaling json payload")
+		return
+	}
+
+	conn.Write(jsonPayloadBytes)
 }
 
 func listenToGeneralBroadcasts(port int) {
@@ -206,9 +221,14 @@ func listenToGeneralBroadcasts(port int) {
 	buf := make([]byte, 1024)
 	for {
 		n, _, _ := conn.ReadFrom(buf)
-		msg := buf[:n]
+		msgBytes := buf[:n]
 
-		fmt.Printf("#general: %s\n", msg)
+		var msg JsonPayload
+		err := json.Unmarshal(msgBytes, &msg)
+		if err != nil {
+			fmt.Println("could not deserialize message")
+		}
+		fmt.Printf("(%s): %s\n", msg.Id, msg.Message)
 	}
 }
 
