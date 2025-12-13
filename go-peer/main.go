@@ -10,6 +10,7 @@ import (
 	"net"
 	"os"
 	"strconv"
+	"strings"
 	"syscall"
 	"time"
 	"unicode/utf8"
@@ -47,15 +48,23 @@ func main() {
 	go listenForMessages(myAddr)
 	go listenToGeneralBroadcasts(msgBroadcastPort)
 
-	scanner := bufio.NewScanner(os.Stdin)
-	for scanner.Scan() {
-		line := scanner.Text()
-		if utf8.RuneCountInString(line) == 0 {
+	reader := bufio.NewReader(os.Stdin)
+
+	for {
+		input, err := reader.ReadString('\n')
+		if err != nil {
+			fmt.Printf("could not read input: %v\n", err)
+			continue
+		}
+
+		input = strings.TrimSpace(input)
+
+		if utf8.RuneCountInString(input) == 0 {
 			continue
 		}
 
 		parser := chat.NewParser()
-		msg := parser.Parse(line)
+		msg := parser.Parse(input)
 
 		switch msg.Kind() {
 		case "command":
@@ -66,13 +75,7 @@ func main() {
 			broadcastMessage(msg.Value())
 		}
 
-		fmt.Println("you:", line)
-
-		if err := scanner.Err(); err != nil {
-			fmt.Fprintln(os.Stdout, "could not read standard input", err)
-		}
 	}
-
 }
 
 func broadcastPeer() {
@@ -225,7 +228,7 @@ func listAllPeers() {
 	fmt.Println(green + "All Peers" + reset)
 	for _, peer := range peersDiscovered {
 		if randId == peer.Id {
-			fmt.Printf("%s (you)\n", peer.Id)
+			fmt.Printf("\n%s (you)", peer.Id)
 			continue
 		}
 		fmt.Println(peer.Id)
