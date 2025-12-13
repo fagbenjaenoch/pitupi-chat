@@ -228,7 +228,9 @@ func listenToGeneralBroadcasts(port int) {
 		if err != nil {
 			fmt.Println("could not deserialize message")
 		}
-		fmt.Printf("(%s): %s\n", msg.Id, msg.Message)
+		if msg.Id != randId {
+			fmt.Printf("(%s): %s\n", msg.Id, msg.Message)
+		}
 	}
 }
 
