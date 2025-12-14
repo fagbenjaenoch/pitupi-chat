@@ -1,6 +1,9 @@
 package chat
 
-import "testing"
+import (
+	"fmt"
+	"testing"
+)
 
 func TestCommandHandler(t *testing.T) {
 	commandHandler := CommandHandler{}
@@ -32,7 +35,8 @@ func TestCommandHandler(t *testing.T) {
 	}
 
 	for _, tc := range tests {
-		t.Run(tc.input, func(t *testing.T) {
+		testname := fmt.Sprintf("%s,%s", tc.input, tc.want)
+		t.Run(testname, func(t *testing.T) {
 			result, _ := commandHandler.Handle(tc.input)
 
 			if result.Value() != tc.want {
